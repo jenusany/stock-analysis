@@ -1,0 +1,39 @@
+# Ignore virtual environment directories
+venv/
+env/
+stockAnalysis/
+
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore logs and databases
+*.log
+*.sqlite3
+
+# Ignore any personal environment or IDE settings
+.vscode/
+.idea/
+
+# Ignore any environment variable files
+.env
+
+# Ignore any cached data
+*.cache
+
+# Ignore coverage reports
+.coverage
+coverage/
+
+# Ignore the packages installed by pip
+# If not using a virtual environment, you may need to adjust the paths accordingly
+site-packages/
