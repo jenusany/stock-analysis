@@ -8,10 +8,18 @@ from plotly import graph_objs as go
 START = '2015-01-01'
 TODAY = date.today().strftime("%Y-%m-%d")
 
-st.title("Stock Prediciton App")
+st.markdown(
+    "<div style='text-align: center;'>"
+    "<h1>Stock Prediciton App</h1>"
+    "<br>"
+    "</div>",
+    unsafe_allow_html=True
+)
+
+tickers = yf.Tickers('')
 
 stocks = ("AAPL", "GOOG")
-selected_stocks = st.selectbox("Select dataset for prediciton", stocks)
+selected_stocks = st.selectbox("Select Stock Ticker", stocks)
 
 n_years = st.slider("Years of prediciton:", 1,4)
 period = n_years * 365
@@ -37,3 +45,24 @@ def plot_raw_data():
     
 plot_raw_data()
 
+df_train = data[['Date', "Close"]]
+df_train = df_train.rename(columns={
+    "Date": "ds",
+    "Close": "y"
+                                    })
+
+m = Prophet()
+m.fit(df_train)
+future = m.make_future_dataframe(periods=period)
+forecast = m.predict(future)
+
+st.subheader("Forecast Data")
+st.write(forecast.tail())
+
+st.write('forecast data')
+forecastData = plot_plotly(m, forecast)
+st.plotly_chart(forecastData)
+
+st.write('forecast components')
+forecastComp = m.plot_components(forecast)
+st.write(forecastComp)
