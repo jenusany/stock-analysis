@@ -6,7 +6,7 @@ from prophet.plot import plot_plotly
 from plotly import graph_objs as go
 from datetime import datetime
 
-START = '2015-01-01'
+START = '2014-01-01'
 END = date.today().strftime("%Y-%m-%d")
 
 st.markdown(
@@ -24,11 +24,12 @@ user_input = st.text_input("Enter Ticker", "")
 # Display the input
 st.button("Analyze")
 
-def load_data(ticker, start = START, end = END):
-    data = yf.download(ticker, start, end)
+def load_data(ticker):
+    data = yf.download(ticker, START, END)
     data.reset_index(inplace=True)
     return data
 
+ticker = yf.Ticker(user_input)
 data = load_data(user_input)
 index = len(data) - 1
 
@@ -52,11 +53,13 @@ st.write(chartData)
 def plot_raw_data():
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=data['Date'], y=data['Open'], name='Open'))
-    fig.layout.update(title_text="Time Series Data", xaxis_rangeslider_visible=True)
+    fig.layout.update(title_text="10 Year Time Series Data", xaxis_rangeslider_visible=True)
     st.plotly_chart(fig)
     
 plot_raw_data()
-    
+
+st.write("Analyst Reccomendations")
+st.write(ticker.recommendations)
 
 df_train = data[['Date', "Close"]]
 df_train = df_train.rename(columns={
@@ -69,10 +72,9 @@ m.fit(df_train)
 future = m.make_future_dataframe(periods=365)
 forecast = m.predict(future)
 
-st.subheader("Forecast Data")
-st.write(forecast.tail())
+st.subheader("1 Year Machine Learning Forecast Data")
+st.write(forecast.tail(365))
 
-st.write('forecast data')
+st.subheader("1 Year Machine Learning Forecast Chart")
 forecastData = plot_plotly(m, forecast)
 st.plotly_chart(forecastData)
-
