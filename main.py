@@ -4,38 +4,50 @@ import yfinance as yf
 from prophet import Prophet
 from prophet.plot import plot_plotly
 from plotly import graph_objs as go
+from datetime import datetime
 
 START = '2015-01-01'
-TODAY = date.today().strftime("%Y-%m-%d")
+END = date.today().strftime("%Y-%m-%d")
 
 st.markdown(
     "<div style='text-align: center;'>"
-    "<h1>Stock Prediciton App</h1>"
+    "<h1>Stock Analysis</h1>"
     "<br>"
     "</div>",
     unsafe_allow_html=True
 )
 
-tickers = yf.Tickers('')
+user_input = st.text_input("Enter Ticker", "")
 
-stocks = ("AAPL", "GOOG")
-selected_stocks = st.selectbox("Select Stock Ticker", stocks)
+    
+    
+# Display the input
+st.button("Analyze")
 
-n_years = st.slider("Years of prediciton:", 1,4)
-period = n_years * 365
-
-@st.cache_data
-def load_data(ticker):
-    data = yf.download(ticker, START, TODAY)
+def load_data(ticker, start = START, end = END):
+    data = yf.download(ticker, start, end)
     data.reset_index(inplace=True)
     return data
 
-data_load_state = st.text("Load data...")
-data = load_data(selected_stocks)
-data_load_state.text("Done")
+data = load_data(user_input)
+index = len(data) - 1
 
-st.subheader("Raw data")
-st.write(data.tail(5))
+st.markdown(
+    "<div style='text-align: center;'>"
+    "<h2>Current Data</h2>"
+    "<br>"
+    "</div>",
+    unsafe_allow_html=True
+)
+
+chartData = data.tail(365)[::-1]
+
+formatted_dates = [datetime.strptime(str(date)[:-9], "%Y-%m-%d").strftime("%B %d, %Y") for date in chartData["Date"]]
+chartData["Date"] = formatted_dates
+
+st.write("1 Year Raw Data")
+
+st.write(chartData)
 
 def plot_raw_data():
     fig = go.Figure()
@@ -44,16 +56,17 @@ def plot_raw_data():
     st.plotly_chart(fig)
     
 plot_raw_data()
+    
 
 df_train = data[['Date', "Close"]]
 df_train = df_train.rename(columns={
-    "Date": "ds",
-    "Close": "y"
+        "Date": "ds",
+        "Close": "y"
                                     })
 
 m = Prophet()
 m.fit(df_train)
-future = m.make_future_dataframe(periods=period)
+future = m.make_future_dataframe(periods=365)
 forecast = m.predict(future)
 
 st.subheader("Forecast Data")
@@ -63,6 +76,3 @@ st.write('forecast data')
 forecastData = plot_plotly(m, forecast)
 st.plotly_chart(forecastData)
 
-st.write('forecast components')
-forecastComp = m.plot_components(forecast)
-st.write(forecastComp)
